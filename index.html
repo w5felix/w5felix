@@ -1,144 +1,46 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!doctype html>
 <html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Portfolio — man page</title>
-  <meta name="description" content="Personal CS portfolio in a bright, minimalist, early‑2000s IDE / man page style.">
+  <title>xG Pitch</title>
+  <meta name="description" content="Tap or click to reveal a glowing soccer pitch and drop xG datapoints.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="light-terminal">
-<div id="page">
-  <div id="menubar" aria-hidden="true">
-    File  Edit  View  Navigate  Tools  Help
-  </div>
-
-  <div id="titlebar">
-    <span class="dot green" title="online">●</span>
-    <span class="filename">portfolio.1</span>
-    <span class="divider">—</span>
-    <span>man page</span>
-    <span class="divider">—</span>
-    <span class="readonly">read only</span>
-  </div>
-
-  <div id="window">
-    <pre class="rule" aria-hidden="true">/* ===================================================== */</pre>
-
-    <div class="columns">
-      <nav class="toc" aria-label="Table of contents">
-        <div class="toc-title">Sections</div>
-        <ol>
-          <li><a href="#NAME">NAME</a></li>
-          <li><a href="#SYNOPSIS">SYNOPSIS</a></li>
-          <li><a href="#DESCRIPTION">DESCRIPTION</a></li>
-          <li><a href="#PROJECTS">PROJECTS</a></li>
-          <li><a href="#SKILLS">SKILLS</a></li>
-          <li><a href="#EDUCATION">EDUCATION</a></li>
-          <li><a href="#CONTACT">CONTACT</a></li>
-        </ol>
-      </nav>
-
-      <main class="content" id="content" role="main">
-        <!--
-          QUICK PERSONALIZATION GUIDE:
-          - Replace "Your Name" and contact links below.
-          - Update projects, skills, and education with your details.
-          - Keep the structure for the man-page vibe.
-        -->
-        <article class="man">
-          <section>
-            <h2 id="NAME">NAME</h2>
-            <p><span class="cmd">your-name</span> — computer science major, software engineer, builder of simple things that work</p>
-          </section>
-
-          <section>
-            <h2 id="SYNOPSIS">SYNOPSIS</h2>
-            <pre class="synopsis">
-$ whoami
-  Your Name  &lt;you@example.com&gt;
-
-$ whereis
-  San Francisco, CA (open to remote)
-
-$ links
-  GitHub    https://github.com/yourhandle
-  LinkedIn  https://www.linkedin.com/in/your-handle
-  Resume    ./resume.pdf
-            </pre>
-          </section>
-
-          <section>
-            <h2 id="DESCRIPTION">DESCRIPTION</h2>
-            <p>I'm a CS student who enjoys systems, tooling, and clean interfaces. I like bright terminals, predictable software, and learning by shipping.</p>
-            <p>Interests include: compilers, UI primitives, UNIX tools, and small web backends. I'm currently exploring how to make developer UX fast and friendly.</p>
-          </section>
-
-          <section>
-            <h2 id="PROJECTS">PROJECTS</h2>
-            <div class="entry">
-              <div class="entry-title">textgrep <span class="tag">C++</span> <span class="tag">CLI</span></div>
-              <div class="entry-body">A tiny, portable grep-like tool with colorized output and Windows/macOS/Linux builds.</div>
-              <div class="entry-links">code: <a href="#">github.com/yourhandle/textgrep</a></div>
-            </div>
-            <div class="entry">
-              <div class="entry-title">study-notes <span class="tag">Web</span> <span class="tag">Node</span></div>
-              <div class="entry-body">A minimalist notes site with keyboard navigation and plain-text exports.</div>
-              <div class="entry-links">code: <a href="#">github.com/yourhandle/study-notes</a> · live: <a href="#">notes.example.com</a></div>
-            </div>
-            <div class="entry">
-              <div class="entry-title">tinydb <span class="tag">Go</span></div>
-              <div class="entry-body">A learning project: append-only KV store with an on-disk hash index.</div>
-              <div class="entry-links">code: <a href="#">github.com/yourhandle/tinydb</a></div>
-            </div>
-          </section>
-
-          <section>
-            <h2 id="SKILLS">SKILLS</h2>
-            <ul class="cols-2">
-              <li>C / C++</li>
-              <li>Go</li>
-              <li>JavaScript / TypeScript</li>
-              <li>HTML / CSS</li>
-              <li>Node / Express</li>
-              <li>SQL (SQLite, Postgres)</li>
-              <li>Git, Linux, Bash</li>
-              <li>Testing & CI</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 id="EDUCATION">EDUCATION</h2>
-            <p><strong>Your University</strong> — B.S. in Computer Science (Expected 20XX)</p>
-            <ul>
-              <li>Coursework: Algorithms, Operating Systems, Databases, Compilers, HCI</li>
-              <li>Clubs: Programming Club, Robotics</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 id="CONTACT">CONTACT</h2>
-            <p>Email is best: <a href="mailto:you@example.com">you@example.com</a></p>
-            <p>Also on GitHub: <a href="https://github.com/yourhandle">@yourhandle</a></p>
-          </section>
-        </article>
-      </main>
+<body>
+  <div id="app">
+    <canvas id="canvas" aria-label="Soccer pitch" role="img"></canvas>
+    <div id="prompt" aria-live="polite">click anywhere to begin</div>
+    <div id="scroll-cue" aria-hidden="true">
+      <span class="arrow"></span>
+      <span class="label">scroll down</span>
     </div>
-
-    <pre class="rule" aria-hidden="true">/* ===================================================== */</pre>
+    <div id="citation" role="note" aria-live="polite">
+      The above xG visualization is powered by an inference model running in your browser, trained by a multi‑layer neural network on the StatsBomb dataset, which contains data on 80,000 shots taken by professional footballers.
+    </div>
   </div>
 
-  <div id="statusbar" role="contentinfo" aria-label="Status bar">
-    <span>UTF‑8</span>
-    <span>Spaces: 2</span>
-    <span>CRLF</span>
-    <span id="clock" title="Local time">--:--</span>
-    <span class="flex"></span>
-    <span>Ln 1, Col 1</span>
-  </div>
-</div>
+  <section id="bio">
+    <div class="bio-inner">
+      <h1>Felix Wu</h1>
+      <p class="subtitle">Developer • Footballer </p>
+      <div class="bio-grid">
+        <div class="avatar" role="img" aria-label="Portrait placeholder"></div>
+        <div class="copy">
+          <p>Hello! I’m Felix, an undergrad at the University of Toronto. This interactive xG pitch is a playful nod to
+              my passion for data science and football.</p>
+          <p></p>
+          <p>Let’s connect: <a href="#" class="link">@felix</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<script src="index.js" defer></script>
+  <script src="model/xg_mlp_infer.js" defer></script>
+  <script src="index.js" defer></script>
 </body>
 </html>

@@ -4,6 +4,7 @@
   const ctx = canvas.getContext('2d');
   const promptEl = document.getElementById('prompt');
   const scrollCue = document.getElementById('scroll-cue');
+  const scrollCueLand = document.getElementById('scroll-cue-land');
   const citationEl = document.getElementById('citation');
 
   const DPR = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
@@ -43,7 +44,7 @@
   // Typewriter prompt setup
   function startPromptTyping() {
     if (!promptEl) return;
-    const fullText = 'click anywhere to begin';
+    const fullText = 'tap anywhere to start';
     promptEl.classList.add('typing');
     promptEl.innerHTML = '<span class="text"></span><span class="caret"></span>';
     const textSpan = promptEl.querySelector('.text');
@@ -118,6 +119,15 @@
     }
 
     draw();
+
+    // Reposition and adjust scroll cue(s) on resize/orientation change
+    if (state.firstSequenceCompleted) {
+      if (state.landscape) {
+        positionLandscapeCue();
+      }
+      const anyShowing = (scrollCue && scrollCue.classList.contains('show')) || (scrollCueLand && scrollCueLand.classList.contains('show'));
+      if (anyShowing) setCueVisible(true);
+    }
   }
 
   function clear() {
@@ -626,16 +636,44 @@
   }
 
   function setCueVisible(show) {
-    if (!scrollCue) return;
-    if (show) scrollCue.classList.add('show');
-    else scrollCue.classList.remove('show');
+    // Control the appropriate cue by orientation; ensure mutual exclusivity
+    const portraitEl = scrollCue;
+    const landEl = scrollCueLand;
+    if (!portraitEl && !landEl) return;
+    if (!show) {
+      if (portraitEl) portraitEl.classList.remove('show');
+      if (landEl) landEl.classList.remove('show');
+      return;
+    }
+    if (state.landscape) {
+      if (landEl) landEl.classList.add('show');
+      if (portraitEl) portraitEl.classList.remove('show');
+    } else {
+      if (portraitEl) portraitEl.classList.add('show');
+      if (landEl) landEl.classList.remove('show');
+    }
+  }
+
+  function positionLandscapeCue() {
+    if (!scrollCueLand) return;
+    // Place just below the penalty arc on the center line (y=40)
+    // Arc centered at (cx=108, cy=40) with r=9.15, arc edge at x=cx - r
+    const cx = 108, cy = 40, r = 9.15;
+    const xBelowArc = cx - r - 1; // 1m further from goal so it sits below the arc
+    const [px, py] = sbToCanvas(xBelowArc, cy);
+    const offsetPx = Math.max(8, Math.min(24, Math.round(Math.min(state.pitchRect.w, state.pitchRect.h) * 0.02)));
+    scrollCueLand.style.left = px + 'px';
+    scrollCueLand.style.top = (py + offsetPx) + 'px';
+    scrollCueLand.style.transform = 'translate(-50%, 0)';
   }
 
   function maybeShowScrollCue() {
-    if (!state.firstSequenceCompleted || !scrollCue) return;
-    if (window.scrollY > 8) return;
-    // slight delay to feel intentional
-    setTimeout(() => setCueVisible(true), 250);
+    if (!state.firstSequenceCompleted) return;
+    // Always attempt to show after first reveal; minor browser UI shifts shouldn't suppress it
+    setTimeout(() => {
+      if (state.landscape) positionLandscapeCue();
+      setCueVisible(true);
+    }, 250);
   }
 
   let scrollRaf = false;

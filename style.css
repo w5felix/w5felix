@@ -32,7 +32,7 @@ html, body {
   transition: none;
   will-change: auto;
   background: #06090d; /* match canvas edge color to avoid visible strip */
-  padding-bottom: 140px; /* taller extra space below backdrop, same color */
+  padding-bottom: 300px; /* extend extra space below backdrop so you scroll longer before white */
 }
 
 #canvas {
@@ -46,12 +46,14 @@ html, body {
 /* Citation near the bottom of the pitch backdrop */
 #citation {
   position: absolute;
-  left: 16px;
-  bottom: calc(env(safe-area-inset-bottom, 16px) + 44px);
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 24px) + 64px); /* leave comfy margin above extra black scroll space */
   max-width: min(760px, 88vw);
-  font-size: clamp(10px, 1.6vw, 13px);
+  font-size: clamp(12px, 1.9vw, 15px); /* slightly larger for readability */
   line-height: 1.5;
   color: var(--muted);
+  text-align: center;
   opacity: 0; /* hidden by default; revealed on scroll */
   text-shadow: 0 0 6px rgba(110,231,255,0.25);
   pointer-events: none;
@@ -61,7 +63,7 @@ html, body {
 /* Nudge the citation lower on phones so lines don't overlap it */
 @media (max-width: 720px) {
   #citation {
-    bottom: calc(env(safe-area-inset-bottom, 16px) + 20px); /* place into the added blackspace */
+    bottom: calc(env(safe-area-inset-bottom, 20px) + 48px); /* margin above bottom on phones too; accounts for safe areas */
   }
 }
 #citation.show { opacity: 0.85; }
@@ -192,4 +194,308 @@ html, body {
   font-size: 12px;
   color: var(--muted);
   opacity: 0.7;
+}
+
+/* Dark, minimal, futuristic */
+:root {
+  --bg: #0b0f14;
+  --fg: #e9f1ff;
+  --accent: #6ee7ff;
+  --pitch: #ffffff;
+  --muted: #9bb0c3;
+  /* transition vars controlled by JS during scroll */
+  --app-blur: 0px;
+  --app-opacity: 1;
+  --bio-opacity: 0;
+  --bio-translate: 24px;
+}
+
+html, body { height: 100%; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Orbitron', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
+}
+
+#app {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  touch-action: manipulation;
+  filter: none;
+  opacity: 1;
+  transition: none;
+  will-change: auto;
+  background: #06090d; /* match canvas edge color to avoid visible strip */
+  padding-bottom: 300px; /* extend extra space below backdrop so you scroll longer before white */
+}
+
+#canvas {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
+
+/* Citation near the bottom of the pitch backdrop */
+#citation {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 24px) + 64px); /* leave comfy margin above extra black scroll space */
+  max-width: min(760px, 88vw);
+  font-size: clamp(12px, 1.9vw, 15px); /* slightly larger for readability */
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: center;
+  opacity: 0; /* hidden by default; revealed on scroll */
+  text-shadow: 0 0 6px rgba(110,231,255,0.25);
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+
+/* Nudge the citation lower on phones so lines don't overlap it */
+@media (max-width: 720px) {
+  #citation {
+    bottom: calc(env(safe-area-inset-bottom, 20px) + 48px); /* margin above bottom on phones too; accounts for safe areas */
+  }
+}
+#citation.show { opacity: 0.85; }
+
+#prompt {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(16px, 3.5vw, 42px);
+  letter-spacing: 0.08em;
+  color: var(--fg);
+  text-shadow: 0 0 12px rgba(110,231,255,0.45), 0 0 22px rgba(110,231,255,0.25);
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Caret for typewriter */
+#prompt.typing .caret {
+  display: inline-block;
+  width: 0.08em;
+  height: 1em;
+  background: var(--fg);
+  margin-left: 0.12em;
+  vertical-align: -0.05em;
+  animation: caretBlink 1s steps(2, jump-none) infinite;
+  box-shadow: 0 0 8px rgba(110,231,255,0.6);
+}
+
+@keyframes caretBlink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* Gentle brightness pulse after typing finishes */
+#prompt.soft-pulse { animation: softPulse 2.8s ease-in-out infinite; }
+@keyframes softPulse {
+  0% { opacity: 0.65; filter: brightness(0.85); }
+  50% { opacity: 1; filter: brightness(1.05); }
+  100% { opacity: 0.65; filter: brightness(0.85); }
+}
+
+/* Scroll cue */
+#scroll-cue {
+  position: absolute;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 16px) + 10px);
+  transform: translateX(-50%) translateY(12px) scale(0.98);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  color: var(--fg);
+  pointer-events: none;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+#scroll-cue .arrow {
+  width: 8px;
+  height: 24px;
+  position: relative;
+}
+#scroll-cue .arrow::before,
+#scroll-cue .arrow::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--fg);
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(110,231,255,0.5);
+}
+#scroll-cue .arrow::before {
+  top: 0;
+  width: 2px;
+  height: 14px;
+}
+#scroll-cue .arrow::after {
+  bottom: 0;
+  width: 8px;
+  height: 8px;
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+}
+#scroll-cue .label {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+#scroll-cue.show {
+  opacity: 0.9;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+/* Bright bio section */
+#bio {
+  position: relative;
+  background: #f7fafc;
+  color: #0a0f14;
+  min-height: 120vh;
+  padding: 14vh 7vw 18vh;
+  box-sizing: border-box;
+  opacity: 1;
+  transform: none;
+  transition: background-color 0.3s ease;
+  pointer-events: auto;
+}
+#bio .bio-inner { max-width: 1100px; margin: 0 auto; }
+#bio h1 { font-size: clamp(28px, 6vw, 56px); margin: 0 0 12px; letter-spacing: 0.02em; }
+#bio .subtitle { margin: 0 0 28px; color: #334155; opacity: 0.8; font-size: clamp(14px, 2.6vw, 18px); }
+#bio .bio-grid { display: grid; grid-template-columns: 140px 1fr; gap: 24px; align-items: start; }
+#bio .avatar { width: 140px; height: 140px; border-radius: 12px; background: linear-gradient(135deg, #cce7ff, #e8f0ff); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+#bio .copy { font-size: clamp(14px, 2.4vw, 18px); line-height: 1.6; color: #0f172a; }
+#bio .link { color: #0ea5e9; text-decoration: none; border-bottom: 1px dashed rgba(14,165,233,0.5); }
+#bio .link:hover { border-bottom-style: solid; }
+
+@media (max-width: 720px) {
+  #bio .bio-grid { grid-template-columns: 1fr; }
+  #bio .avatar { width: 96px; height: 96px; }
+}
+
+/* Projects section */
+#projects {
+  position: relative;
+  background: #ffffff;
+  color: #0a0f14;
+  padding: 10vh 7vw 16vh;
+}
+#projects .projects-inner { max-width: 1100px; margin: 0 auto; }
+#projects h2 { font-size: clamp(22px, 5vw, 40px); margin: 0 0 24px; letter-spacing: 0.02em; }
+#projects .projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.project-card {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 18px;
+  align-items: center;
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 10px 30px rgba(2, 8, 23, 0.06), inset 0 0 0 1px rgba(2,8,23,0.06);
+  transition: transform 0.2s ease, box-shadow 0.25s ease;
+}
+.project-card:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(2,8,23,0.09), inset 0 0 0 1px rgba(2,8,23,0.08); }
+.project-thumb { width: 120px; height: 120px; border-radius: 10px; background: linear-gradient(135deg, #dbeafe, #e2e8f0); box-shadow: inset 0 0 32px rgba(0,0,0,0.06); }
+.project-thumb.mnist { background: conic-gradient(from 45deg, #111827, #1f2937, #0f172a, #111827); position: relative; }
+.project-thumb.mnist::after {
+  content: '0 1 2 3 4 5 6 7 8 9';
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: #93c5fd; font-size: 12px; letter-spacing: 0.2em; opacity: 0.8;
+}
+.project-content { min-width: 0; }
+.project-title { margin: 0 0 6px; font-size: clamp(16px, 3.2vw, 22px); }
+.project-meta { margin: 0 0 8px; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 0.12em; }
+.project-desc { margin: 0; color: #0f172a; font-size: clamp(13px, 2.6vw, 16px); line-height: 1.5; }
+
+@media (max-width: 640px) {
+  .project-card { grid-template-columns: 1fr; }
+  .project-thumb { width: 100%; height: 160px; }
+}
+
+/* Small helper text style (if needed later) */
+.hint {
+  position: absolute;
+  bottom: env(safe-area-inset-bottom, 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+
+/* Overrides for prompt position and scroll-cue placement */
+@media (orientation: portrait) {
+  #scroll-cue {
+    top: 75vh; /* about 3/4 down the screen on phones */
+    bottom: auto;
+    transform: translateX(-50%) translateY(8px) scale(0.98);
+  }
+  #scroll-cue.show {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+/* Nudge start prompt slightly higher globally */
+#prompt { top: 46%; }
+
+
+/* Overrides appended to address landscape scroll-cue visibility and shorten bio height */
+#scroll-cue { z-index: 5; }
+#bio { min-height: 70vh; padding-bottom: 12vh; }
+
+
+/* Landscape-specific scroll cue positioned via JS under the penalty arc */
+#scroll-cue-land {
+  position: absolute;
+  left: 50%; /* overridden by JS */
+  top: 70%;  /* overridden by JS */
+  transform: translate(-50%, 0) scale(0.98);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  color: var(--fg);
+  pointer-events: none;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  z-index: 6;
+}
+#scroll-cue-land .arrow { width: 8px; height: 24px; position: relative; }
+#scroll-cue-land .arrow::before,
+#scroll-cue-land .arrow::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--fg);
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(110,231,255,0.5);
+}
+#scroll-cue-land .arrow::before { top: 0; width: 2px; height: 14px; }
+#scroll-cue-land .arrow::after { bottom: 0; width: 8px; height: 8px; clip-path: polygon(50% 100%, 0 0, 100% 0); }
+#scroll-cue-land .label { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.85; }
+#scroll-cue-land.show { opacity: 0.9; transform: translate(-50%, 0) scale(1); }
+
+/* Ensure portrait cue is used only in portrait; landscape cue only in landscape */
+@media (orientation: portrait) {
+  #scroll-cue-land { display: none; }
+}
+@media (orientation: landscape) {
+  #scroll-cue { display: none; }
 }

@@ -14,10 +14,15 @@
 <body>
   <div id="app">
     <canvas id="canvas" aria-label="Soccer pitch" role="img"></canvas>
-    <div id="prompt" aria-live="polite">click anywhere to begin</div>
+    <div id="prompt" aria-live="polite">tap anywhere to start</div>
     <div id="scroll-cue" aria-hidden="true">
-      <span class="arrow"></span>
-      <span class="label">scroll down</span>
+      <span class="arrow" aria-hidden="true"></span>
+      <span class="label">Scroll</span>
+    </div>
+    <!-- Landscape-specific scroll cue positioned near the penalty arc -->
+    <div id="scroll-cue-land" aria-hidden="true">
+      <span class="arrow" aria-hidden="true"></span>
+      <span class="label">Scroll</span>
     </div>
     <div id="citation" role="note" aria-live="polite">
       The xG model runs entirely in your browser. The model was trained using a multi-layer neural net on more than 80,000 shots in professional football games.
@@ -38,6 +43,22 @@
           <p></p>
           <p>Let’s connect: <a href="#" class="link">@felix</a></p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects" aria-labelledby="projects-title">
+    <div class="projects-inner">
+      <h2 id="projects-title">Projects</h2>
+      <div class="projects-grid">
+        <a class="project-card" href="https://w5felix.github.io/MNIST-Model-Canvas/static/index.html" target="_blank" rel="noopener noreferrer">
+          <div class="project-thumb mnist" aria-hidden="true"></div>
+          <div class="project-content">
+            <h3 class="project-title">MNIST Model Canvas</h3>
+            <p class="project-meta">CNN in the browser • Client-side inference</p>
+            <p class="project-desc">A convolutional neural network I trained that runs entirely in the front end to recognize handwritten digits.</p>
+          </div>
+        </a>
       </div>
     </div>
   </section>

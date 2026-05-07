@@ -31,6 +31,8 @@ html, body {
   opacity: 1;
   transition: none;
   will-change: auto;
+  background: #06090d; /* match canvas edge color to avoid visible strip */
+  padding-bottom: 140px; /* taller extra space below backdrop, same color */
 }
 
 #canvas {
@@ -54,6 +56,13 @@ html, body {
   text-shadow: 0 0 6px rgba(110,231,255,0.25);
   pointer-events: none;
   transition: opacity 0.45s ease;
+}
+
+/* Nudge the citation lower on phones so lines don't overlap it */
+@media (max-width: 720px) {
+  #citation {
+    bottom: calc(env(safe-area-inset-bottom, 16px) + 20px); /* place into the added blackspace */
+  }
 }
 #citation.show { opacity: 0.85; }
 

@@ -201,16 +201,7 @@
   function drawPitch() {
     const { x, y, w, h } = state.pitchRect;
     const v = state.sbView;
-
-    // Outer rectangle of the visible SB view
-    ctx.save();
     const baseSize = state.landscape ? w : h; // use non-stretched axis as scale reference
-    ctx.strokeStyle = 'rgba(255,255,255,0.95)';
-    ctx.lineWidth = Math.max(1, baseSize * 0.0026);
-    ctx.shadowColor = 'rgba(110,231,255,0.25)';
-    ctx.shadowBlur = Math.max(3, baseSize * 0.01);
-    ctx.strokeRect(x, y, w, h);
-    ctx.restore();
 
     // Internal lines within the view
     ctx.save();

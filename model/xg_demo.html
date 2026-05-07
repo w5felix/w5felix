@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>xG demo (static)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 20px; color: #222; }
+    .row { display: flex; gap: 20px; flex-wrap: wrap; }
+    .panel { border: 1px solid #ddd; border-radius: 8px; padding: 12px; }
+    #pitch { background: #0b6623; border-radius: 8px; cursor: crosshair; }
+    .small { font-size: 12px; color: #666; }
+    label { display:block; margin-top: 8px; }
+    input[type=number]{ width: 120px; }
+    button{ margin-top: 8px; }
+    .stat { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  </style>
+</head>
+<body>
+  <h1>Static xG demo (model-only)</h1>
+  <p>This page runs the exported xG model entirely in your browser. Train and export on your machine, then serve the folder statically.</p>
+
+  <ol>
+    <li>Train: <span class="stat">python3 archive-2/train_xg_nn.py --train</span></li>
+    <li>Export for web: <span class="stat">python3 archive-2/train_xg_nn.py --export-web --model-path archive-2/models/xg_mlp.joblib</span></li>
+    <li>Serve statically from repo root: <span class="stat">python3 -m http.server 8000</span></li>
+    <li>Open: <span class="stat">http://localhost:8000/archive-2/web/xg_demo.html</span></li>
+  </ol>
+
+  <div class="row">
+    <div class="panel">
+      <canvas id="pitch" width="600" height="400"></canvas>
+      <div class="small">StatsBomb units: x in [0,120], y in [0,80]. Click the pitch to predict.</div>
+    </div>
+    <div class="panel" style="min-width:260px;">
+      <h3>Predict</h3>
+      <label>X: <input id="x" type="number" min="0" max="120" step="0.1" value="102"></label>
+      <label>Y: <input id="y" type="number" min="0" max="80" step="0.1" value="40"></label>
+      <button id="btnPredict">Predict xG</button>
+      <div id="out" style="margin-top:10px;">
+        <div>Model xG: <b id="xg">-</b></div>
+      </div>
+      <div class="small" style="margin-top:8px;">Model JSON path: <span class="stat" id="modelPath">../models/xg_mlp_web.json</span></div>
+    </div>
+  </div>
+
+  <script src="xg_mlp_infer.js"></script>
+  <script>
+    // Simple pitch drawing and coordinate mapping
+    const canvas = document.getElementById('pitch');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    function drawPitch(){
+      ctx.clearRect(0,0,W,H);
+      ctx.fillStyle = '#0b6623';
+      ctx.fillRect(0,0,W,H);
+      ctx.strokeStyle = '#e8f5e9';
+      ctx.lineWidth = 2;
+      // Outer lines
+      ctx.strokeRect(10,10,W-20,H-20);
+      // Halfway line
+      ctx.beginPath(); ctx.moveTo(W/2,10); ctx.lineTo(W/2,H-10); ctx.stroke();
+      // Center circle
+      ctx.beginPath(); ctx.arc(W/2, H/2, 40, 0, Math.PI*2); ctx.stroke();
+      // Penalty boxes (approx)
+      const boxW = 110, boxH = 180; // pixels
+      ctx.strokeRect(10, H/2 - boxH/2, boxW, boxH); // left
+      ctx.strokeRect(W-10 - boxW, H/2 - boxH/2, boxW, boxH); // right
+      // Goals (small lines)
+      ctx.beginPath();
+      ctx.moveTo(W-10, H/2 - 18); ctx.lineTo(W-2, H/2 - 18);
+      ctx.moveTo(W-10, H/2 + 18); ctx.lineTo(W-2, H/2 + 18);
+      ctx.moveTo(10, H/2 - 18); ctx.lineTo(2, H/2 - 18);
+      ctx.moveTo(10, H/2 + 18); ctx.lineTo(2, H/2 + 18);
+      ctx.stroke();
+    }
+
+    function sbToCanvas(x, y){
+      // SB: x:0->120 maps to left->right inside 10..W-10; y:0->80 maps to 10..H-10 top->bottom
+      const px = 10 + (x / 120) * (W - 20);
+      const py = 10 + (y / 80)  * (H - 20);
+      return [px, py];
+    }
+
+    function canvasToSb(px, py){
+      const x = ((px - 10) / (W - 20)) * 120;
+      const y = ((py - 10) / (H - 20)) * 80;
+      return [x, y];
+    }
+
+    drawPitch();
+
+    const modelUrl = '../models/xg_mlp_web.json';
+    document.getElementById('modelPath').textContent = modelUrl;
+
+    let predictor = null;
+    loadXgModel(modelUrl).then(p => { predictor = p; }).catch(err => {
+      console.error(err);
+      alert('Failed to load model JSON. Did you run the export step?');
+    });
+
+    function doPredict(x, y){
+      if (!predictor) { alert('Model not loaded yet.'); return; }
+      const xg = predictor.predict(Number(x), Number(y));
+      document.getElementById('xg').textContent = Number.isFinite(xg) ? xg.toFixed(4) : 'NaN';
+    }
+
+    document.getElementById('btnPredict').addEventListener('click', () => {
+      const x = Number(document.getElementById('x').value);
+      const y = Number(document.getElementById('y').value);
+      doPredict(x, y);
+    });
+
+    canvas.addEventListener('click', (ev) => {
+      const rect = canvas.getBoundingClientRect();
+      const px = ev.clientX - rect.left; const py = ev.clientY - rect.top;
+      const [x, y] = canvasToSb(px, py);
+      // Clamp to bounds
+      const xc = Math.min(120, Math.max(0, x));
+      const yc = Math.min(80, Math.max(0, y));
+      document.getElementById('x').value = xc.toFixed(2);
+      document.getElementById('y').value = yc.toFixed(2);
+      // Draw a small marker
+      drawPitch();
+      const [mx, my] = sbToCanvas(xc, yc);
+      ctx.fillStyle = '#ffeb3b';
+      ctx.beginPath(); ctx.arc(mx, my, 5, 0, Math.PI*2); ctx.fill();
+      doPredict(xc, yc);
+    });
+  </script>
+</body>
+</html>

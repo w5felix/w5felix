@@ -1,0 +1,166 @@
+/*
+  Bright-mode, early-2000s IDE / man page skin
+  Keep it simple: fixed width, monospace, blue links, light borders.
+*/
+
+/* Base */
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #fafafa; /* bright paper-like */
+  color: #111;
+  font-family: "Courier New", Courier, Consolas, Monaco, monospace;
+  line-height: 1.35;
+}
+
+#page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Faux menubar (old IDE vibe) */
+#menubar {
+  background: #e6e6e6;
+  color: #000;
+  padding: 4px 10px;
+  border-bottom: 1px solid #c9c9c9;
+  letter-spacing: 0.2px;
+  user-select: none;
+}
+
+/* Title bar */
+#titlebar {
+  background: #f4f4f4;
+  border-bottom: 1px solid #d8d8d8;
+  padding: 6px 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+#titlebar .dot {
+  font-size: 12px;
+}
+#titlebar .dot.green { color: #2a9d00; }
+#titlebar .filename { font-weight: bold; }
+#titlebar .divider { color: #777; }
+#titlebar .readonly { color: #555; font-style: italic; }
+
+/* Window */
+#window {
+  width: 880px; /* early 2000s fixed layout */
+  margin: 0 auto;
+  background: #fff;
+  border-left: 1px solid #e0e0e0;
+  border-right: 1px solid #e0e0e0;
+}
+
+.rule {
+  margin: 0;
+  padding: 6px 10px;
+  color: #888;
+  background: #fbfbfb;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 0;
+}
+
+/* Table of contents */
+.toc {
+  border-right: 1px solid #eee;
+  background: #fcfcfc;
+  padding: 10px 10px 20px 12px;
+}
+.toc-title {
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: #333;
+}
+.toc ol {
+  margin: 0;
+  padding-left: 16px;
+}
+.toc a {
+  color: #0000EE; /* classic blue */
+  text-decoration: underline;
+}
+.toc a:visited { color: #551A8B; }
+
+/* Content */
+.content {
+  padding: 14px 18px 40px 18px;
+}
+
+.man h2 {
+  margin: 16px 0 6px 0;
+  padding: 4px 6px;
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: #000;
+  background: #f2f7ff;
+  border: 1px solid #d6e6ff;
+}
+
+.man p, .man li, .man div, .man pre {
+  font-size: 13px;
+}
+
+.synopsis {
+  background: #fffff4;
+  border: 1px solid #ece3a5;
+  padding: 8px 10px;
+  overflow-x: auto;
+}
+
+.entry { margin: 10px 0 14px 0; }
+.entry-title { font-weight: bold; }
+.entry-body { margin: 2px 0 2px 0; }
+.entry-links { color: #333; }
+
+.tag {
+  display: inline-block;
+  font-weight: normal;
+  font-size: 11px;
+  padding: 0 4px;
+  margin-left: 6px;
+  color: #0b3d91;
+  background: #eaf1ff;
+  border: 1px solid #cbdcff;
+}
+
+.cols-2 {
+  columns: 2;
+  -webkit-columns: 2;
+  -moz-columns: 2;
+  column-gap: 40px;
+}
+
+/* Links global */
+ a { color: #0000EE; }
+ a:visited { color: #551A8B; }
+ a:hover { text-decoration: underline; }
+
+/* Status bar */
+#statusbar {
+  margin-top: auto;
+  padding: 6px 10px;
+  background: #efefef;
+  border-top: 1px solid #d8d8d8;
+  color: #000;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+#statusbar .flex { flex: 1; }
+
+/* Small screens: stack columns but keep vibe */
+@media (max-width: 940px) {
+  #window { width: auto; margin: 0; border-left: none; border-right: none; }
+  .columns { display: block; }
+  .toc { border-right: none; border-bottom: 1px solid #eee; }
+}

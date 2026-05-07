@@ -383,22 +383,22 @@
     }
   }
 
-  // Sequence renderer with smooth retract, reveal (first time only), and finalize
+  // Sequence renderer with smooth retract, hold, reveal (first time only), and finalize with no residuals
   function renderSequence(now) {
     const seq = state.seq;
     if (!seq) return false;
     const elapsed = now - seq.t0;
 
     // Phase timings
-    const lineStart = 1000; // ms: pause with square
-    const lineDur = 1000;   // ms: draw line out
-    const textStart = lineStart + lineDur; // 2000ms
-    const textDur = 900;    // ms: typewriter
-    const retractStart = textStart + textDur; // 2900ms
-    const retractDur = 800; // ms: retract line
-    const revealStart = retractStart + retractDur; // 3700ms
-    const revealDur = 1400; // ms: circular reveal of pitch from click point (first time only)
-    const defocusDur = 450; // ms: gently transition spot size/glow to static (first time only)
+    const lineStart = 600; // ms: brief pause with square
+    const lineDur = 900;   // ms: draw line out
+    const textStart = lineStart + lineDur; // ~1500ms
+    const textDur = 700;   // ms: typewriter-in
+    const holdDur = 4000;  // ms: keep data visible on the line
+    const retractStart = textStart + textDur + holdDur; // start retract after hold
+    const retractDur = 900; // ms: retract line and fade everything out
+    const revealStart = seq.doReveal ? 0 : (retractStart + retractDur); // start revealing immediately with the first click
+    const revealDur = 1200; // ms: circular reveal of pitch from click point (first time only)
 
     // Easing helpers
     const clamp01 = (t) => Math.max(0, Math.min(1, t));
@@ -414,18 +414,32 @@
       drawDatapoints();
     }
 
-    // Always draw the square point during the sequence
-    drawSquarePoint(seq.px, seq.py, 10, true);
+    // Compute retract progress (0 before retract, 0..1 during retract)
+    const retractT = elapsed >= retractStart ? clamp01((elapsed - retractStart) / retractDur) : 0;
+    const retractEase = easeInCubic(retractT);
+
+    // Dot fades during retract
+    const dotAlpha = 1 - retractEase; // 1 -> 0
+    const dotSize = 10 * (0.85 + 0.15 * (1 - retractEase)); // subtle shrink
+    if (dotAlpha > 0) {
+      ctx.save();
+      ctx.globalAlpha = dotAlpha;
+      // reduce glow as it fades
+      const prevShadow = ctx.shadowBlur;
+      ctx.shadowBlur = 10 * (1 - retractEase);
+      drawSquarePoint(seq.px, seq.py, dotSize, true);
+      ctx.shadowBlur = prevShadow;
+      ctx.restore();
+    }
 
     // Compute current line end based on phase
-    let lineProgress = 0; // 0..1 extending
+    let lineProgress = 0; // 0..1 extending then retracting
     if (elapsed >= lineStart) {
       if (elapsed < retractStart) {
         lineProgress = easeOutCubic(clamp01((elapsed - lineStart) / lineDur));
       } else {
         // Retraction: from 1 down to 0
-        const r = easeInCubic(clamp01((elapsed - retractStart) / retractDur));
-        lineProgress = 1 - r;
+        lineProgress = 1 - retractEase;
       }
     }
 
@@ -434,10 +448,11 @@
       const x2 = seq.px + seq.dirX * seq.len * lineProgress;
       const y2 = seq.py + seq.dirY * seq.len * lineProgress;
       ctx.save();
-      ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+      const lineAlpha = Math.max(0, 0.85 * (elapsed < retractStart ? 1 : (1 - retractEase)));
+      ctx.strokeStyle = `rgba(255,255,255,${lineAlpha.toFixed(3)})`;
       ctx.lineWidth = 2;
       ctx.shadowColor = 'rgba(255,255,255,0.6)';
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 10 * (elapsed < retractStart ? 1 : (1 - retractEase));
       strokeLine(seq.px, seq.py, x2, y2);
       ctx.restore();
       seq.anchorX = x2; // current tip for label attachment
@@ -447,14 +462,14 @@
       seq.anchorY = seq.py;
     }
 
-    // Render stacked stats: xG, (x,y), distance — follows the line tip and does NOT vanish on retract
+    // Render stacked stats: xG, (x,y), distance — follows the line tip
     if (elapsed >= textStart) {
       ctx.save();
       const stackFont = seq.stackFont || getLabelFontPx();
       ctx.font = `600 ${stackFont}px Orbitron, sans-serif`;
       ctx.fillStyle = '#e9f1ff';
       ctx.shadowColor = 'rgba(110,231,255,0.25)';
-      ctx.shadowBlur = 6;
+      ctx.shadowBlur = 6 * (1 - retractEase);
 
       const offset = 8;
       // Measure max line width to choose side
@@ -463,65 +478,63 @@
         const m = ctx.measureText(s);
         if (m.width > maxW) maxW = m.width;
       }
-      // Prefer side based on line direction: if line goes right, put text on right; if it goes left, put text on left
+      // Prefer side based on line direction
       let baseX = (seq.dirX >= 0) ? (seq.anchorX + offset) : (seq.anchorX - maxW - offset);
-      // Edge-aware fallback: if chosen side goes off-screen, flip to the other side
+      // Edge-aware fallback
       if (baseX < 6) baseX = seq.anchorX + offset;
       if (baseX + maxW > state.width - 6) baseX = seq.anchorX - maxW - offset;
       let baseY = seq.anchorY - 8;
       if (seq.anchorY < 20) baseY = seq.anchorY + 24;
 
-      // Staggered fade-in per line, but keep fully visible thereafter
+      // Type-in per line
       const per = textDur / Math.max(1, seq.lines.length);
       const lh = stackFont * 1.18;
 
-      // Compute visibility alpha to use for a single backdrop behind the whole stack
+      // Alphas
       let visAlpha = 0;
       const lineAlphas = new Array(seq.lines.length).fill(0);
       for (let i = 0; i < seq.lines.length; i++) {
         const tIn = clamp01((elapsed - textStart - i * per) / per);
-        const a = easeInOutCubic(tIn);
+        const aIn = easeInOutCubic(tIn);
+        // Apply fade-out during retract
+        const a = aIn * (1 - retractEase);
         lineAlphas[i] = a;
         if (a > visAlpha) visAlpha = a;
       }
 
-      // Draw small black backdrop so pitch lines don't obstruct text
+      // Backdrop block (matches dark field tone)
       const pad = Math.max(2, stackFont * 0.3);
       const bgX = baseX - pad;
-      const bgY = (baseY - stackFont) - pad; // approximate top
-      // measure max width again to ensure consistency
+      const bgY = (baseY - stackFont) - pad;
       let maxW2 = 0; for (const s of seq.lines) { const m = ctx.measureText(s); if (m.width > maxW2) maxW2 = m.width; }
       const bgW = maxW2 + pad * 2;
       const bgH = lh * seq.lines.length + pad * 2;
-      ctx.save();
-      ctx.globalAlpha = visAlpha; // fade backdrop in with text
-      ctx.shadowColor = 'transparent';
-      // Match the soccer field backdrop color (same dark tone) instead of black
-      ctx.fillStyle = 'rgba(11,15,20,0.85)';
-      ctx.fillRect(bgX, bgY, bgW, bgH);
-      ctx.restore();
-
-      // Draw lines with their individual alphas on top of the backdrop
-      for (let i = 0; i < seq.lines.length; i++) {
-        const alphaIn = lineAlphas[i];
-        if (alphaIn <= 0) continue;
+      if (visAlpha > 0) {
         ctx.save();
-        ctx.globalAlpha = alphaIn;
+        ctx.globalAlpha = visAlpha;
+        ctx.shadowColor = 'transparent';
+        ctx.fillStyle = 'rgba(11,15,20,0.85)';
+        ctx.fillRect(bgX, bgY, bgW, bgH);
+        ctx.restore();
+      }
+
+      // Text lines
+      for (let i = 0; i < seq.lines.length; i++) {
+        const a = lineAlphas[i];
+        if (a <= 0) continue;
+        ctx.save();
+        ctx.globalAlpha = a;
         ctx.fillText(seq.lines[i], baseX, baseY + i * lh);
         ctx.restore();
       }
       ctx.restore();
     }
 
-    // Helper: compute static point size exactly like drawDatapoints
-    const staticPointSize = Math.max(4, Math.min(state.pitchRect.w, state.pitchRect.h) * 0.01);
-
     // First click: reveal-from-darkness with circular clip; subsequent clicks skip this block
     if (seq.doReveal && elapsed >= revealStart) {
       const t = clamp01((elapsed - revealStart) / revealDur);
       const ease = easeOutCubic(t);
       const { x, y, w, h } = state.pitchRect;
-      // radius to farthest corner ensures full reveal
       const maxR = Math.max(
         Math.hypot(seq.px - x, seq.py - y),
         Math.hypot(seq.px - (x + w), seq.py - y),
@@ -537,68 +550,27 @@
       ctx.clip();
       ctx.globalAlpha = 0.2 + 0.8 * ease;
       drawPitch();
-      // Also show any existing points (none on first click typically)
       drawDatapoints();
       ctx.restore();
-
-      // Current point: during reveal keep at size 10, but towards end start easing to static size
-      const endEaseThreshold = 0.85; // start blending near end
-      let curSize = 10;
-      if (ease > endEaseThreshold) {
-        const k = (ease - endEaseThreshold) / (1 - endEaseThreshold);
-        const blend = easeInOutCubic(clamp01(k));
-        curSize = 10 + (staticPointSize - 10) * blend;
-      }
-      drawSquarePoint(seq.px, seq.py, curSize, true);
     }
 
-    // Finalization logic
+    // Finalization logic — no persistence of points or labels
     if (!seq.doReveal) {
-      // Subsequent clicks: end right after retract completes, commit point, keep everything on screen
       if (elapsed >= retractStart + retractDur) {
-        if (!seq.committed) {
-          state.points.push({ u: seq.u, v: seq.v, xg: seq.xg, x: seq.x, y: seq.y, lines: seq.lines, side: seq.side, born: performance.now() });
-          seq.committed = true;
-        }
         state.seq = null;
       }
     } else {
-      // First click: after reveal completes, gently defocus then finish
       const endOfReveal = revealStart + revealDur;
+      // As soon as the reveal finishes, keep the pitch visible
       if (elapsed >= endOfReveal) {
-        // Commit the point at the end of reveal so it exists in the static list
-        if (!seq.committed) {
-          state.points.push({ u: seq.u, v: seq.v, xg: seq.xg, x: seq.x, y: seq.y, lines: seq.lines, side: seq.side, born: performance.now() });
-          seq.committed = true;
-        }
-
-        const tDefocus = clamp01((elapsed - endOfReveal) / defocusDur);
-        const d = easeInOutCubic(tDefocus);
-
-        // Draw full scene (no clip), with current point easing to static size/glow
-        clear();
-        drawPitch();
-        drawDatapoints();
-
-        // Overdraw the just-added current point with an easing size to match static exactly at t=1
-        const curSize = 10 + (staticPointSize - 10) * d;
-        const glowNow = 16; // keep consistent with static drawSquarePoint glow
-        ctx.save();
-        ctx.fillStyle = '#ffffff';
-        ctx.shadowColor = 'rgba(255,255,255,0.9)';
-        ctx.shadowBlur = glowNow;
-        const s = curSize;
-        ctx.fillRect(seq.px - s/2, seq.py - s/2, s, s);
-        ctx.restore();
-
-        // End when defocus finished
-        if (tDefocus >= 1) {
-          state.initialized = true;
-          state.seq = null;
-          if (!state.firstSequenceCompleted) {
-            state.firstSequenceCompleted = true;
-            maybeShowScrollCue();
-          }
+        state.initialized = true;
+      }
+      // But let the node sequence run its course; end after retract completes
+      if (elapsed >= retractStart + retractDur) {
+        state.seq = null;
+        if (!state.firstSequenceCompleted) {
+          state.firstSequenceCompleted = true;
+          maybeShowScrollCue();
         }
       }
     }
@@ -731,6 +703,8 @@
       // hide the prompt immediately on first actual interaction
       promptEl.style.display = 'none';
     }
+    // Ensure scroll hints don't overlap the active sequence visuals
+    setCueVisible(false);
 
     // Prepare sequence parameters
     const { u, v } = canvasToPitchUV(px, py);

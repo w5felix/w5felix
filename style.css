@@ -499,3 +499,17 @@ html, body {
 @media (orientation: landscape) {
   #scroll-cue { display: none; }
 }
+
+
+/* Layering and scroll-hint stability overrides */
+#canvas { z-index: 10; }
+#scroll-cue, #scroll-cue-land {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  z-index: 12; /* above canvas so hints are visible; pointer-events remain none */
+}
+
+
+/* Ensure start prompt appears above the canvas */
+#prompt { z-index: 20; }

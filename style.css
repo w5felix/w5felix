@@ -513,3 +513,18 @@ html, body {
 
 /* Ensure start prompt appears above the canvas */
 #prompt { z-index: 20; }
+
+
+/* Avatar image fit and Uhillian project thumb logo */
+#bio .avatar {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.project-thumb.uhillian {
+  background-image: url('imgs/uhillianLogo.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #ffffff; /* keep card light behind logo */
+}

@@ -394,7 +394,7 @@
     const lineDur = 900;   // ms: draw line out
     const textStart = lineStart + lineDur; // ~1500ms
     const textDur = 700;   // ms: typewriter-in
-    const holdDur = 4000;  // ms: keep data visible on the line
+    const holdDur = 2000;  // ms: keep data visible on the line (reduced from 4000ms)
     const retractStart = textStart + textDur + holdDur; // start retract after hold
     const retractDur = 900; // ms: retract line and fade everything out
     const revealStart = seq.doReveal ? 1500 : (retractStart + retractDur); // delay first reveal by 1.5s
@@ -788,8 +788,8 @@
   window.addEventListener('resize', onResize);
   window.addEventListener('orientationchange', onResize);
   window.addEventListener('scroll', onScroll, { passive: true });
-  canvas.addEventListener('pointerdown', handlePointer, { passive: true });
-  canvas.addEventListener('touchstart', handlePointer, { passive: true });
+  // Only create xG points on intentional clicks (avoid touchstart/pointerdown to prevent scroll-triggered points)
+  canvas.addEventListener('click', handlePointer, { passive: true });
 
   // Init
   onResize();

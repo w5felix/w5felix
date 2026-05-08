@@ -345,7 +345,7 @@
       const lines = p.lines || [`${p.xg.toFixed(2)} xG`];
       ctx.save();
       ctx.globalAlpha = alpha;
-      ctx.font = `600 ${finalFont}px Orbitron, sans-serif`;
+      ctx.font = `600 ${finalFont}px 'Lucida Console', monospace`;
       ctx.fillStyle = '#e9f1ff';
       ctx.shadowColor = 'rgba(110,231,255,0.2)';
       ctx.shadowBlur = 5;
@@ -470,7 +470,7 @@
     if (elapsed >= textStart) {
       ctx.save();
       const stackFont = seq.stackFont || getLabelFontPx();
-      ctx.font = `600 ${stackFont}px Orbitron, sans-serif`;
+      ctx.font = `600 ${stackFont}px 'Lucida Console', monospace`;
       ctx.fillStyle = '#e9f1ff';
       ctx.shadowColor = 'rgba(110,231,255,0.25)';
       ctx.shadowBlur = 6 * retractFade;
@@ -753,7 +753,7 @@
     ];
     // Measure with final font to decide safe final placement
     ctx.save();
-    ctx.font = `600 ${finalFont}px Orbitron, sans-serif`;
+    ctx.font = `600 ${finalFont}px 'Lucida Console', monospace`;
     const metrics = ctx.measureText(text);
     ctx.restore();
     const baseOffset = Math.max(6, Math.min(state.width, state.height) * 0.008);

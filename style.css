@@ -528,3 +528,9 @@ html, body {
   background-repeat: no-repeat;
   background-color: #ffffff; /* keep card light behind logo */
 }
+
+
+/* Global override to use Lucida Console across the site */
+html, body, body *, body *::before, body *::after {
+  font-family: 'Lucida Console', monospace !important;
+}

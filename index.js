@@ -417,16 +417,19 @@
     // Compute retract progress (0 before retract, 0..1 during retract)
     const retractT = elapsed >= retractStart ? clamp01((elapsed - retractStart) / retractDur) : 0;
     const retractEase = easeInCubic(retractT);
+    // Use a smoother S-curve for fading elements during retract so they gently dim out
+    const smoothstep = (t) => t * t * (3 - 2 * t);
+    const retractFade = 1 - smoothstep(retractT);
 
     // Dot fades during retract
-    const dotAlpha = 1 - retractEase; // 1 -> 0
-    const dotSize = 10 * (0.85 + 0.15 * (1 - retractEase)); // subtle shrink
+    const dotAlpha = retractFade; // 1 -> 0 using smooth fade
+    const dotSize = 10 * (0.85 + 0.15 * (1 - retractEase)); // subtle shrink (keep geometric retract easing)
     if (dotAlpha > 0) {
       ctx.save();
       ctx.globalAlpha = dotAlpha;
       // reduce glow as it fades
       const prevShadow = ctx.shadowBlur;
-      ctx.shadowBlur = 10 * (1 - retractEase);
+      ctx.shadowBlur = 10 * retractFade;
       drawSquarePoint(seq.px, seq.py, dotSize, true);
       ctx.shadowBlur = prevShadow;
       ctx.restore();
@@ -448,11 +451,12 @@
       const x2 = seq.px + seq.dirX * seq.len * lineProgress;
       const y2 = seq.py + seq.dirY * seq.len * lineProgress;
       ctx.save();
-      const lineAlpha = Math.max(0, 0.85 * (elapsed < retractStart ? 1 : (1 - retractEase)));
+      const lineAlphaBase = 0.85;
+      const lineAlpha = Math.max(0, lineAlphaBase * (elapsed < retractStart ? 1 : retractFade));
       ctx.strokeStyle = `rgba(255,255,255,${lineAlpha.toFixed(3)})`;
       ctx.lineWidth = 2;
       ctx.shadowColor = 'rgba(255,255,255,0.6)';
-      ctx.shadowBlur = 10 * (elapsed < retractStart ? 1 : (1 - retractEase));
+      ctx.shadowBlur = 10 * (elapsed < retractStart ? 1 : retractFade);
       strokeLine(seq.px, seq.py, x2, y2);
       ctx.restore();
       seq.anchorX = x2; // current tip for label attachment
@@ -469,7 +473,7 @@
       ctx.font = `600 ${stackFont}px Orbitron, sans-serif`;
       ctx.fillStyle = '#e9f1ff';
       ctx.shadowColor = 'rgba(110,231,255,0.25)';
-      ctx.shadowBlur = 6 * (1 - retractEase);
+      ctx.shadowBlur = 6 * retractFade;
 
       const offset = 8;
       // Measure max line width to choose side
@@ -496,8 +500,8 @@
       for (let i = 0; i < seq.lines.length; i++) {
         const tIn = clamp01((elapsed - textStart - i * per) / per);
         const aIn = easeInOutCubic(tIn);
-        // Apply fade-out during retract
-        const a = aIn * (1 - retractEase);
+        // Apply smooth fade-out during retract
+        const a = aIn * retractFade;
         lineAlphas[i] = a;
         if (a > visAlpha) visAlpha = a;
       }

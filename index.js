@@ -397,8 +397,8 @@
     const holdDur = 4000;  // ms: keep data visible on the line
     const retractStart = textStart + textDur + holdDur; // start retract after hold
     const retractDur = 900; // ms: retract line and fade everything out
-    const revealStart = seq.doReveal ? 0 : (retractStart + retractDur); // start revealing immediately with the first click
-    const revealDur = 1200; // ms: circular reveal of pitch from click point (first time only)
+    const revealStart = seq.doReveal ? 1500 : (retractStart + retractDur); // delay first reveal by 1.5s
+    const revealDur = 1596; // ms: circular reveal slowed by exactly 33% on first reveal (1200ms → 1596ms)
 
     // Easing helpers
     const clamp01 = (t) => Math.max(0, Math.min(1, t));

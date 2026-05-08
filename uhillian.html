@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>The Uhillian (PHP) Archive — Project</title>
+  <meta name="description" content="Overview and notes about The Uhillian (PHP) Archive project.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Brighter, simpler page-specific overrides (scoped). */
+    :root { color-scheme: light; }
+    html { background: #f8fafc; }
+    body { background: #f8fafc; color: #111827; }
+    a { color: #0ea5e9; }
+
+    .project-hero { 
+      max-width: 960px; 
+      margin: 0 auto; 
+      padding: 24px 20px 8px; 
+      display: flex; 
+      align-items: center; 
+      gap: 16px; 
+    }
+    .project-hero .logo { 
+      width: 64px; 
+      height: 64px; 
+      background-size: contain; 
+      background-repeat: no-repeat; 
+      background-position: center; 
+      border-radius: 12px; 
+      flex: 0 0 64px;
+      box-shadow: 0 0 0 2px rgba(0,0,0,0.05) inset;
+      background-color: #fff;
+    }
+    .project-hero .title { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 6px; 
+    }
+    .project-hero .title h1 { margin: 0; color: #0f172a; }
+    .project-hero .meta { opacity: 0.7; font-size: 0.95rem; color: #334155; }
+
+    .project-actions { 
+      max-width: 960px; 
+      margin: 0 auto; 
+      padding: 0 20px 24px; 
+      display: flex; 
+      gap: 12px; 
+      flex-wrap: wrap; 
+      align-items: center; 
+    }
+    .btn { 
+      display: inline-block; 
+      padding: 10px 14px; 
+      border: 1px solid rgba(15,23,42,0.12); 
+      border-radius: 10px; 
+      text-decoration: none; 
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+      transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.12s ease; 
+    }
+    .btn:hover { transform: translateY(-1px); background: #f1f5f9; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
+
+    .article { 
+      max-width: 960px; 
+      margin: 0 auto; 
+      padding: 8px 20px 48px; 
+      line-height: 1.65; 
+    }
+    .article h2 { margin-top: 28px; color: #0f172a; }
+
+    /* Carousel */
+    .carousel {
+      position: relative;
+      width: 100%;
+      max-width: 960px;
+      margin: 12px auto 28px;
+      background: #ffffff;
+      border: 1px solid rgba(15,23,42,0.08);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    }
+    .carousel-viewport { position: relative; width: 100%; height: 0; padding-bottom: 56.25%; background: #e2e8f0; }
+    .carousel-track { position: absolute; inset: 0; display: flex; transition: transform 300ms ease; }
+    .carousel-slide { flex: 0 0 100%; display: grid; place-items: center; background: #e2e8f0; }
+    .carousel-slide img { width: 100%; height: 100%; object-fit: contain; }
+
+    .carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.9); border: 1px solid rgba(15,23,42,0.1); width: 40px; height: 40px; border-radius: 999px; display: grid; place-items: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .carousel-btn:hover { background: #f8fafc; }
+    .carousel-btn.prev { left: 10px; }
+    .carousel-btn.next { right: 10px; }
+
+    .carousel-dots { display: flex; gap: 6px; justify-content: center; padding: 10px; background: #ffffff; border-top: 1px solid rgba(15,23,42,0.06); }
+    .carousel-dot { width: 8px; height: 8px; border-radius: 999px; background: #cbd5e1; border: none; cursor: pointer; }
+    .carousel-dot[aria-current="true"] { background: #0ea5e9; }
+
+    .carousel-caption { padding: 8px 12px; font-size: 0.9rem; color: #475569; background: #ffffff; border-top: 1px solid rgba(15,23,42,0.06); }
+
+    .visually-hidden { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px); white-space: nowrap; }
+
+    .back { font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <header class="project-hero" role="banner">
+    <a class="back btn" href="index.html" aria-label="Back to home">← Back</a>
+    <div class="logo" style="background-image:url('imgs/uhillianLogo.png');" aria-hidden="true"></div>
+    <div class="title">
+      <h1>The Uhillian (PHP) Archive</h1>
+      <div class="meta">Laravel • Full‑stack • 2022</div>
+    </div>
+  </header>
+
+  <nav class="project-actions" aria-label="Project quick actions">
+    <a class="btn" href="https://github.com/w5felix/The-Uhillian-PHP-Archive" target="_blank" rel="noopener noreferrer">View GitHub repo</a>
+  </nav>
+
+  <main class="article" id="content">
+    <!-- Image album carousel -->
+    <section class="carousel" role="region" aria-label="Uhillian image album">
+      <div class="carousel-viewport" id="carousel-viewport">
+        <div class="carousel-track" id="carousel-track" style="transform: translateX(0%)"></div>
+        <button class="carousel-btn prev" id="prevBtn" aria-label="Previous image" title="Previous">
+          <span aria-hidden="true">‹</span>
+        </button>
+        <button class="carousel-btn next" id="nextBtn" aria-label="Next image" title="Next">
+          <span aria-hidden="true">›</span>
+        </button>
+      </div>
+      <div class="carousel-caption" id="carousel-caption">Loading images…</div>
+      <div class="carousel-dots" id="carousel-dots" aria-label="Select slide"></div>
+    </section>
+
+    <noscript>
+      <div style="padding:12px;border:1px solid #e2e8f0;border-radius:10px;background:#fff;color:#0f172a;">
+        Enable JavaScript to view the image album.
+      </div>
+    </noscript>
+
+    <h2>Overview</h2>
+    <p>
+      The Uhillian is a full‑stack social platform I built in 2022 with Laravel and PHP. It combines classic social
+      networking mechanics (accounts, posts, comments) with a course‑review experience similar to RateMyProfessors, but
+      tailored for my community. The project here is an archive of that work with screenshots and notes about the
+      implementation.
+    </p>
+
+    <h2>Backend and infrastructure</h2>
+    <ul>
+      <li>Framework: Laravel (PHP), following MVC conventions and service‑oriented helpers.</li>
+      <li>Database: MySQL with migrations, seeders, and Eloquent models for all core entities.</li>
+      <li>Hosting: AWS‑backed database and app infrastructure, provisioned and deployed via Laravel Forge.</li>
+      <li>Security: Email‑based authentication (Laravel Breeze/Jetstream style), CSRF protection, and route middleware.</li>
+      <li>Sessions: Server‑backed sessions with sane cookie settings for production.</li>
+    </ul>
+
+    <h2>Deployment and workflow</h2>
+    <ul>
+      <li>Git‑based flow from development to production with topic branches and PRs.</li>
+      <li>SSH access configured for zero‑downtime deploys through Laravel Forge.</li>
+      <li>Environment management using .env, Forge secrets, and per‑env configs.</li>
+      <li>Served a small community of roughly ~80 users in production.</li>
+    </ul>
+
+    <h2>Frontend</h2>
+    <ul>
+      <li>Built with Blade templates, Bootstrap, vanilla JS, HTML, and CSS.</li>
+      <li>Reusable Blade components for forms, flash messages, and lists.</li>
+      <li>Progressive enhancement approach: works without JS where practical.</li>
+    </ul>
+
+    <h2>Core features</h2>
+    <ul>
+      <li>Email authentication and account onboarding.</li>
+      <li>User management: profiles, roles/permissions for admin tasks.</li>
+      <li>User sessions with middleware‑guarded routes.</li>
+      <li>Posting and commenting with basic moderation tooling.</li>
+      <li>Course reviews: create/read with rating fields and comments, similar to ratemyprof.com.</li>
+      <li>Notifications and activity feeds (simple, database‑driven).</li>
+    </ul>
+
+    <h2>What I learned</h2>
+    <ul>
+      <li>Trade‑offs between rapid iteration and schema design; migrations and seeds kept the team flexible.</li>
+      <li>Forge is a great fit for small apps: reliable deploys, easy SSL, and fast rollbacks.</li>
+      <li>Keeping the frontend modest with Bootstrap + Blade helped ship fast and maintain accessibility.</li>
+    </ul>
+  </main>
+
+  <!-- HEIC conversion library (client-side). Small and loaded only on this page. -->
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+
+  <script>
+    // Build a simple, robust carousel. Now also converts .HEIC images to JPEG in-browser when needed.
+    (function(){
+      const sources = [
+        'imgs/theuhillian/6B4F3F3D-B1AB-46D8-959B-A03D96D5B442.JPG',
+        'imgs/theuhillian/IMG_4681 Medium.jpeg',
+        'imgs/theuhillian/IMG_4736 Medium.jpeg',
+        'imgs/theuhillian/IMG_6558 Medium.jpeg',
+        'imgs/theuhillian/IMG_9312 Medium.jpeg',
+        'imgs/theuhillian/IMG_9313 Medium.jpeg',
+        'imgs/theuhillian/Image 2022-09-25 at 10.55 AM.JPG'
+      ];
+
+      const track = document.getElementById('carousel-track');
+      const caption = document.getElementById('carousel-caption');
+      const dotsWrap = document.getElementById('carousel-dots');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+
+      // Preload with HEIC support: convert .HEIC in-browser to JPEG using heic2any when needed
+      const objectURLs = [];
+      function loadImageDimensions(url){
+        return new Promise((resolve) => {
+          const i = new Image();
+          i.onload = () => resolve({ w: i.naturalWidth, h: i.naturalHeight });
+          i.onerror = () => resolve({ w: 0, h: 0 });
+          i.src = url;
+        });
+      }
+      async function loadOne(path){
+        const original = path;
+        const isHeic = /\.heic$/i.test(path);
+        if (isHeic && typeof window.heic2any === 'function') {
+          try {
+            const resp = await fetch(path);
+            if (!resp.ok) throw new Error('network');
+            const heicBlob = await resp.blob();
+            const converted = await window.heic2any({ blob: heicBlob, toType: 'image/jpeg', quality: 0.9 });
+            const outBlob = Array.isArray(converted) ? converted[0] : converted; // some versions return array
+            const url = URL.createObjectURL(outBlob);
+            objectURLs.push(url);
+            const dim = await loadImageDimensions(url);
+            return { src: url, width: dim.w, height: dim.h, original };
+          } catch (e) {
+            // fall through to try native load (will likely fail on unsupported browsers)
+          }
+        }
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve({ src: path, width: img.naturalWidth, height: img.naturalHeight, original });
+          img.onerror = () => reject(new Error('failed'));
+          img.src = path;
+        });
+      }
+
+      Promise.allSettled(sources.map(src => loadOne(src))).then(results => {
+        const ok = results
+          .filter(r => r.status === 'fulfilled')
+          .map(r => r.value);
+
+        if (ok.length === 0) {
+          caption.textContent = 'No images available. Your browser may not support HEIC and conversion may have failed.';
+          prevBtn.style.display = 'none';
+          nextBtn.style.display = 'none';
+          dotsWrap.style.display = 'none';
+          return;
+        }
+
+        // Render slides
+        ok.forEach((info, idx) => {
+          const slide = document.createElement('div');
+          slide.className = 'carousel-slide';
+          const img = document.createElement('img');
+          img.src = info.src;
+          img.alt = 'Uhillian image ' + (idx + 1);
+          slide.appendChild(img);
+          track.appendChild(slide);
+
+          const dot = document.createElement('button');
+          dot.className = 'carousel-dot';
+          dot.setAttribute('aria-label', 'Go to slide ' + (idx + 1));
+          dot.addEventListener('click', () => goTo(idx));
+          dotsWrap.appendChild(dot);
+        });
+
+        let index = 0;
+        const total = ok.length;
+        function update() {
+          track.style.transform = 'translateX(' + (-100 * index) + '%)';
+          caption.textContent = filenameToCaption(ok[index].original || ok[index].src);
+          // Update dots
+          const dots = dotsWrap.querySelectorAll('.carousel-dot');
+          dots.forEach((d, i) => d.setAttribute('aria-current', i === index ? 'true' : 'false'));
+          // Hide arrows if single image
+          const showArrows = total > 1;
+          prevBtn.style.display = showArrows ? '' : 'none';
+          nextBtn.style.display = showArrows ? '' : 'none';
+        }
+        function goTo(i){ index = (i + total) % total; update(); }
+        function prev(){ goTo(index - 1); }
+        function next(){ goTo(index + 1); }
+        prevBtn.addEventListener('click', prev);
+        nextBtn.addEventListener('click', next);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowLeft') prev();
+          if (e.key === 'ArrowRight') next();
+        });
+
+        // Touch swipe
+        let startX = 0; let dx = 0; let touching = false;
+        const viewport = document.getElementById('carousel-viewport');
+        viewport.addEventListener('touchstart', (e) => { touching = true; startX = e.touches[0].clientX; dx = 0; }, { passive: true });
+        viewport.addEventListener('touchmove', (e) => { if (!touching) return; dx = e.touches[0].clientX - startX; }, { passive: true });
+        viewport.addEventListener('touchend', () => { 
+          if (!touching) return; touching = false; 
+          if (Math.abs(dx) > 40) { dx < 0 ? next() : prev(); }
+        });
+
+        update();
+      });
+
+      // Revoke temp object URLs on unload to prevent memory leaks
+      window.addEventListener('pagehide', () => { objectURLs.forEach(u => URL.revokeObjectURL(u)); });
+      window.addEventListener('beforeunload', () => { objectURLs.forEach(u => URL.revokeObjectURL(u)); });
+
+      function filenameToCaption(p){
+        try {
+          const base = p.split('/').pop();
+          return base
+            .replace(/\.[^.]+$/, '')
+            .replace(/[-_]+/g, ' ')
+            .replace(/\b(img)\b/i, 'Image')
+            .replace(/\buhillian\b/i, 'Uhillian');
+        } catch { return 'Image'; }
+      }
+    })();
+  </script>
+</body>
+</html>
